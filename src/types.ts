@@ -3,7 +3,7 @@ export type StoreType = {
   cart: CartType[];
   userSession: UserSessionType;
   loading: boolean;
-  
+  search: string;
 };
 
 export type ProductType = {
@@ -44,7 +44,6 @@ export type UserSessionType = {
 
 
 export type RegisterResponseType = {
-  message: string;
-  expiresIn: number;
-  access_token: string;
+  userName: string;
+  userEmail: number;
 };

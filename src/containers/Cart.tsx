@@ -6,7 +6,7 @@ import Column from "../components/Column";
 import ImageWithFallback from "../components/ImageWithFallback";
 import Row from "../components/Row";
 
-import { CartType, StoreType } from "../types";
+import { CartType, StoreType,ProductType } from "../types";
 import formatter from "../utils/formatter";
 
 import Container from "../components/Container";
@@ -16,48 +16,43 @@ import CartActions from "../store/actions/CartActions";
 
 type Props = {
   cart: CartType[];
-  qty: number;
- 
-  removeItem: (id: number) => void;
+   removeItem: (id: number) => void;
+   increment: (id: number) => void;
+    decrement: (id: number) => void;
   
-  
-
 } & RouteComponentProps;
+
 type State = {
-  qty: number;
-};
-class Cart extends Component<Props> {
- 
-  state: State = {
-    qty: this.props.qty,
-  };
+  TotalAmt: number;
+  quantity: number;
 
-  incrementQty = () => {
-    this.setState({
-      qty: this.state.qty + 1,
-    });
-  };
-  decrementQty = () => {
-    this.setState({
-      qty: this.state.qty - 1,
-    });
-  };
+}
+
+
+
+class Cart extends Component<Props,State> {
   
+  state: State = { TotalAmt: 0, quantity:1}
+  componentDidMount() {
+    this.TotalAfterAdd()
+}
 
-  removeItem(id: number) {
-    this.props.removeItem(id); // add to cart logic
+
+TotalAfterAdd() {
+    this.props.cart.map((val) => {
+        const total: number = parseInt(val.productSalePrice)
+        this.setState((prevState) => ({ TotalAmt: prevState.TotalAmt + total}))
+    })
+}
+
+TotalAfterRem(price:string) {
+    const total: number = parseInt(price)
+    this.setState((prevState) => ({ TotalAmt: prevState.TotalAmt - total }))
     
-  }
-   
+}
 
-   
-
- 
- 
-
-  
-  
-  render() {
+render() {
+  let finalPrice:number=0;
     return (
       <Container>
         <Row>
@@ -69,6 +64,7 @@ class Cart extends Component<Props> {
         
         
           {this.props.cart.map((val) => (
+            <Row>
             <Column size={4}>
                <div className="card text-center">
         
@@ -96,27 +92,57 @@ class Cart extends Component<Props> {
              <>{val.productPrice}</>
            </h5>
             </div>
-            <button className="btn btn-warning m-2"onClick={this.decrementQty}>-</button>{this.state.qty}
-            <button className="btn btn-success m-2"onClick={this.incrementQty}>+</button>
+            <button className="btn btn-warning m-2"   onClick={() => this.props.decrement(val.productId)}>-</button>{val.productQty}
+            <button className="btn btn-success m-2"   onClick={() => this.props.increment(val.productId)}>+</button>
 
-            <button className="btn btn-sm btn-danger" onClick={() => this.props.removeItem(val.productId)}>Remove</button>                   
+            <button className="btn btn-sm btn-danger" onClick={() =>{
+              
+              
+              this.props.removeItem(val.productId);
+              this.TotalAfterRem(val.productSalePrice)
+              }}>Remove</button>                   
                                         
                                             
           </div>
-         
-                                           
+         </Column>
+            <Column size={4}>
+              <div className="card">
+                <div className="card-body"><h4><b></b>
+                    <p style={{"display":'none'}}> {
+                            (finalPrice =
+                              finalPrice +
+                              this.state.TotalAmt  * val.productQty)
+                          }</p>     
+                        </h4> </div>
+              </div>
+            
             </Column>
-          ))}
-          <Column size={4}>
+            </Row>
 
-          </Column>
+           
+            
+          ))}
+          <h4>FinalPrice:{finalPrice}</h4>
+          
        
       
           <Column size={12}>
           
-              <h4>TotalPrice:{}</h4>
-              <button className="btn btn-sm btn-primary">Check Out</button>
+             
+              <Link className="btn btn-sm btn-primary mx-auto mt-3" to={"/checkout"}>
+                      checkout
+                    </Link>
+
+                  
+
             
+          </Column>
+
+          <Column size={12}>
+          <Link className="btn btn-sm btn-primary mx-auto mt-3" to={"/products"}>
+                      Back to Products
+                    </Link>
+
           </Column>
           </Row>
        
@@ -125,9 +151,9 @@ class Cart extends Component<Props> {
   }
 }
 
-const mapStateToProps = (state: StoreType) => {
+const mapStateToProps = (store: StoreType) => {
   return {
-    cart: state.cart,
+    cart: store.cart,
     
    
   };
@@ -136,6 +162,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
     
     removeItem: (id: number) => dispatch(CartActions.removeItem(id)),
+    increment: (id:number ) => dispatch(CartActions.incrementItem(id)),
+    decrement: (id:number ) => dispatch(CartActions.decrementItem(id))
   };
 };
 export default connect(mapStateToProps, mapDispatchToProps)(Cart);

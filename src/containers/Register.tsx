@@ -25,23 +25,19 @@ type State={
 
     submit = (e: any) => {
         e.preventDefault();
+    
         if (this.state.cpassword === this.state.password) {
-           let input=new FormData();
-           input.append("name",this.state.name);
-           input.append("email",this.state.email);
-           input.append("password",this.state.password);
-           
-           axios.post("http://localhost:5000/auth/register",input).then(
-            (response) => console.log(response.status === 201)
-            
-        );
-        this.setState({ redirect: true });
-           
-              
-        
-            
+          const user = {
+            name: this.state.name,
+            email: this.state.email,
+            password: this.state.password,
+          };
+          axios
+            .post("http://localhost:5000/auth/register", user)
+            .then((response) => console.log(response.status === 201));
+          this.setState({ redirect: true });
         }
-    };
+      };
 
     redirect = () => {
         if (this.state.redirect) {
@@ -73,7 +69,7 @@ type State={
                                <i className="fa fa-user fa-lg text-info"></i>
                            </span>
                       
-                       <input type="text" className="form-control" placeholder="Enter User Name" name="name" value={this.state.name} onChange={this.onChange}/>
+                       <input type="text" className="form-control" placeholder="Enter your name" name="name" value={this.state.name} onChange={this.onChange}/>
                    </div><br/><br/>
                    <div className="form-group input-group" >
                        
@@ -81,7 +77,7 @@ type State={
                                <i className="fa fa-envelope fa-lg text-info"></i>
                            </span>
                       
-                       <input type="email" className="form-control" placeholder="Enter Email-id" name="email"
+                       <input type="email" className="form-control" placeholder="Enter Email id" name="email"
                                             value={this.state.email}
                                             onChange={this.onChange}/>
                    </div><br/><br/>
@@ -106,13 +102,13 @@ type State={
                                     id="message"        onChange={this.onChange}/>
 
                         {this.state.cpassword ===this.state.password ? null : (
-                                            <p>Password Error!</p>
+                                            <p style={{"color":'red'}}>* Password Error!</p>
                                         )}
                    </div><br/><br/>
 
-                   <div className="form-group input-group" >
+                   <div className="form-group" >
                       
-                   <button type="submit" className="btn btn-primary">
+                   <button type="submit" className="btn btn-primary btn-lg w-90">
                 Register
               </button> 
                   </div><br/><br/>

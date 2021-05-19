@@ -2,8 +2,12 @@ import axios from "axios";
 import constants from "../constants";
 import { ProductResponseType, ProductType } from "../types";
 
-const getProducts = (page = 1) => {
-  const url = `${constants.BASE_URL}/product?page=${page}`;
+const getProducts = (page = 1, minPrice:any,
+  maxPrice:any,sortName:any,
+  sortPrice:any,
+  searchData: any,) => {
+  const url = `${constants.BASE_URL}/product?page=${page}&minPrice=${minPrice}&maxPrice=${maxPrice}&sortName=${sortName}&sortPrice=${sortPrice}&searchData=${searchData}`;
+  console.log(sortName,sortPrice);
   return axios.get<ProductResponseType>(url);
 };
 
