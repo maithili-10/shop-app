@@ -1,13 +1,14 @@
-import React, { RefObject, SyntheticEvent } from "react";
+import React, { Dispatch, RefObject, SyntheticEvent } from "react";
 import { connect } from "react-redux";
 import { CartType } from "../types";
 import { Redirect, RouteComponentProps } from "react-router";
 import axios from "axios";
 import StorageService from "../services/StorageService";
+import CartActions from "../store/actions/CartActions";
 
-type Props = { cartData: any } & RouteComponentProps;
+type Props = { cartData: any;reset:any } & RouteComponentProps;
 type State = {
-    
+    pmethod:string;
     firstName: string;
     lastName: string;
     email: string;
@@ -26,11 +27,12 @@ type State = {
     state1: string;
     pincode1: number;
     reRender: boolean;
+
 };
 class Checkout extends React.Component<Props, State> {
     emailRef: RefObject<HTMLInputElement>;
     state: State = {
-       
+       pmethod:"",
         firstName: "",
         lastName: "",
         email: "",
@@ -95,18 +97,48 @@ class Checkout extends React.Component<Props, State> {
         let emailValid = this.emailValidation();
         let mobileValid = this.mobileValidation();
         if (emailValid === true && mobileValid === true) {
-            // alert("form Submited");
+            //alert("form Submited");
 
-           
+            let PDATA = {
+                paymentAmount: this.finalPrice,
+                paymentMethod: this.state.pmethod,
+            };
+            let DATA = {
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
+                mobileNo: JSON.parse(this.state.mobile),
+                line1: this.state.address,
+                line2: this.state.address2,
+                city: this.state.country,
+                state: this.state.state,
+                pincode: this.state.pincode,
+            };
+
+            StorageService.getData("token").then((token) =>
+                axios.post("http://localhost:5000/payment", PDATA, {
+                    headers: { Authorization: `Bearer ${token}` },
+                })
+            );
+            return StorageService.getData("token").then((token) =>
+                axios
+                    .post("http://localhost:5000/address", DATA, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    })
+                    .then((res) =>
+                        res.status === 201
+                            ? (this.setState({ reRender: true }),
+                              this.props.reset())
+                            : this.setState({ reRender: false })
+                    )
+            );
         } else {
-          //  alert("Form submitted");
+            alert("Invalid Form");
         }
     };
 
    emailValidation = () => {
-        let validRegex: any =
-            /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-        if (this.state.email.match(validRegex)) {
+        let emailv: any =/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+        if (this.state.email.match(emailv)) {
             return true;
         } else {
             return false;
@@ -114,10 +146,10 @@ class Checkout extends React.Component<Props, State> {
     };
 
     mobileValidation = () => {
-        let phoneno = /^\d{10}$/;
+        let mobilev = /^\d{10}$/;
         if (
-            this.state.mobile.match(phoneno) &&
-            this.state.mobile1.match(phoneno)
+            this.state.mobile.match(mobilev) &&
+            this.state.mobile1.match(mobilev)
         ) {
             return true;
         } else {
@@ -138,7 +170,36 @@ class Checkout extends React.Component<Props, State> {
                 <h1>Checkout Page</h1>
                 {this.redirect()}
                 <div className="container">
-                   
+                <div className="col-md-5 mb-3">
+                        <label>
+                            Payment Method{" "}
+                            <select
+                                className="custom-select d-block w-100"
+                                id="paymentMethod"
+                                name="paymentMethod"
+                                value={this.state.pmethod}
+                                required
+                                onChange={(e: any) => {
+                                    this.setState({
+                                        pmethod: e.target.value,
+                                    });
+                                }}
+                                onBlur={this.click}
+                            >
+                                <option value="">Choose...</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Debit Card">Debit cards</option>
+                                <option value="Credit cards">
+                                    Credit Card
+                                </option>
+                                <option value="Mobile Payment">
+                                    Mobile Payment
+                                </option>
+                                <option value="Net Banking">Net Banking</option>
+                            </select>
+                        </label>
+                    </div>
+
 
                     <div className="row">
                         <div className="col-md-8 order-md-1">
@@ -677,4 +738,11 @@ const mapStoreToProps = (store: CartType) => {
     };
 };
 
-export default connect(mapStoreToProps, null)(Checkout);
+
+const mapDispatchToProps = (dispatch:any) => {
+    return {
+        reset: () => dispatch(CartActions.reset()),
+    };
+};
+
+export default connect(mapStoreToProps, mapDispatchToProps)(Checkout);

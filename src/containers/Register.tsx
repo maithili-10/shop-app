@@ -1,5 +1,6 @@
 import axios from "axios";
 import React,{Component} from "react";
+import emailjs from "emailjs-com";
 import { Redirect } from "react-router-dom";
 import Column from "../components/Column";
 import Container from "../components/Container";
@@ -15,6 +16,7 @@ type State={
     redirect: boolean;
 }
  class Register extends Component{
+   
     state: State = {
         email: "",
         name: "",
@@ -22,6 +24,7 @@ type State={
         cpassword: "",
         redirect: false,
     };
+   
 
     submit = (e: any) => {
         e.preventDefault();
@@ -34,10 +37,23 @@ type State={
           };
           axios
             .post("http://localhost:5000/auth/register", user)
-            .then((response) => console.log(response.status === 201));
-          this.setState({ redirect: true });
+            .then((response) => (console.log(response),
+            emailjs.sendForm('service_9xakh81', 'template_1b5suml', e.target, 'user_Tl2wAoM9XPaqQkixnyitf')
+                  .then((result) => {
+                      console.log(result.text);
+                  }, (error) => {
+                      console.log(error.text);
+                  })));
+              }
+            
+           
+             
+          this.setState({ 
+              redirect: true,
+             
+             });
         }
-      };
+     
 
     redirect = () => {
         if (this.state.redirect) {

@@ -140,7 +140,7 @@ class ProductList extends React.Component<Props, State> {
   <Column size={4}></Column>
   <Column size={4}></Column>
   <Column size={2}><select name="sort" id="sort" onChange={this.sort}>
-                        <option value=""> FILTER </option>
+                        <option value=""> SORT </option>
                         <option value="PriceLowHigh">Price Low-High</option>
                         <option value="PriceHighLow">Price High-Low</option>
                         <option value="NameLowHigh">Name Ascend</option>
